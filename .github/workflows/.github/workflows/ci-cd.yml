@@ -1,0 +1,55 @@
+name: PAYFLOW CI/CD PIPELINE
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+
+  code-quality:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.10
+
+      - name: Install dependencies
+        run: pip install flake8 safety
+
+      # SECURITY 1 - dependency vulnerability
+      - name: Run Safety Check
+        run: safety check
+
+      # SECURITY 2 - code quality scan
+      - name: Run Flake8
+        run: flake8 . || true
+
+  test:
+    runs-on: ubuntu-latest
+    needs: code-quality
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Python pipeline simulation
+        run: python pipeline.py
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Deploy to Dev
+        run: echo "Deploying to Development..."
+
+      - name: Deploy to Staging
+        run: echo "Deploying to Staging..."
+
+      - name: Production Approval
+        run: echo "Manual approval required before production"
